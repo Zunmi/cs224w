@@ -1,0 +1,176 @@
+\clearpage
+\section{Node Embedding and Its Relation to Matrix Factorization}
+
+\subsection{Simple Matrix Factorization}
+
+For the objective
+\[
+  \min_Z \norm{A-Z^{\mathsf T}Z}_2,
+\]
+identify the decoder in the encoder--decoder view of node embeddings.
+
+\begin{solution}
+Let \(Z=[\vect z_1,\ldots,\vect z_n]\in\R^{d\times n}\), so node embeddings
+are the columns of \(Z\).  Since
+\[
+  (Z^{\mathsf T}Z)_{ij}=\vect z_i^{\mathsf T}\vect z_j,
+\]
+the decoder is the inner product
+\[
+  \boxed{\operatorname{DEC}(\vect z_i,\vect z_j)
+  =\vect z_i^{\mathsf T}\vect z_j}.
+\]
+It predicts \(A_{ij}\), and the stated objective penalizes the difference
+between all predicted and observed pairwise similarities.
+\end{solution}
+
+\subsection{Alternate Matrix Factorization}
+
+Suppose the decoder is the bilinear form
+$\vect{z}_i^{\mathsf T}W\vect{z}_j$. Write the corresponding matrix
+factorization objective.
+
+\begin{solution}
+For \(W\in\R^{d\times d}\), the reconstructed entry and matrix are
+\[
+  \widehat A_{ij}=\vect z_i^{\mathsf T}W\vect z_j,
+  \qquad
+  \widehat A=Z^{\mathsf T}WZ.
+\]
+Thus, when both the embeddings and decoder are learned, the objective is
+\[
+  \boxed{\min_{Z,W}\norm{A-Z^{\mathsf T}WZ}_2}.
+\]
+If \(W\) is fixed, the minimization is over \(Z\) alone.
+\end{solution}
+
+\subsection{Relation to Eigendecomposition}
+
+State the condition on $W$ under which the factorization in 5.2 is equivalent
+to learning an eigendecomposition of $A$.
+
+\begin{solution}
+For a real symmetric adjacency matrix, write its eigendecomposition as
+\[
+  A=U\Lambda U^{\mathsf T},
+  \qquad U^{\mathsf T}U=I,
+\]
+where \(\Lambda\) is diagonal and may contain negative eigenvalues.  Therefore
+\(Z^{\mathsf T}WZ\) has this form when
+\[
+  \boxed{W\text{ is diagonal},\qquad ZZ^{\mathsf T}=I}.
+\]
+Specifically, \(U=Z^{\mathsf T}\) contains the eigenvectors and
+\(W=\Lambda\) contains the corresponding eigenvalues.  If \(d<n\), this is
+the analogous rank-\(d\) truncated eigendecomposition.
+\end{solution}
+
+\subsection{Multi-Hop Node Similarity}
+
+Nodes are similar when connected by at least one path of length at most $k$.
+Using an embedding lookup encoder and inner-product decoder, formulate the
+corresponding matrix factorization problem.
+
+\begin{solution}
+Define the binary \(k\)-hop similarity matrix by
+\[
+  S^{(k)}_{ij}
+  =
+  \begin{cases}
+    1, & i\ne j\text{ and }
+      \left(\sum_{\ell=1}^{k}A^\ell\right)_{ij}>0,\\
+    0, & \text{otherwise}.
+  \end{cases}
+\]
+The powers of \(A\) detect walks of each length, and thresholding implements
+the requirement that at least one path of length at most \(k\) exists.  With
+the inner-product decoder, the desired matrix factorization is
+\[
+  \boxed{\min_Z\norm{S^{(k)}-Z^{\mathsf T}Z}_2}.
+\]
+\end{solution}
+
+\subsection{Limitation of node2vec (i)}
+
+Characterize the node2vec representations of the 10-node cliques in the
+provided graph. Explain whether those embeddings reflect structural similarity.
+
+\begin{solution}
+Let \(C_L\) and \(C_R\) be the left and right 10-node cliques.  Because every
+pair of nodes in a clique is adjacent, node2vec walks generate many
+co-occurrences within the same clique.  Hence it tends to produce
+\[
+  \vect z_u\approx\vect z_v
+  \quad\text{for }u,v\in C_L,
+  \qquad\text{or for }u,v\in C_R.
+\]
+However, the two pictured components are disconnected, so an original-graph
+random walk can never move from one clique to the other.  Consequently there
+are no positive cross-component co-occurrences to align a node in \(C_L\)
+with its structurally corresponding node in \(C_R\); negative sampling may
+even push them apart.  Thus node2vec mainly captures proximity, and these
+embeddings need not reflect the identical structural roles across the two
+cliques.
+\end{solution}
+
+\subsection{Limitation of node2vec (ii)}
+
+After arriving at node $w$, list the nodes reachable in one additional step
+under node2vec and under struct2vec, assuming $g_k(u,v)>0$ for all $u,v,k$.
+
+\begin{solution}
+Node \(w\) is an ordinary node of the right 10-node clique.  Its original-graph
+neighbors are exactly the other nine clique nodes, so node2vec can reach
+\[
+  \boxed{C_R\setminus\{w\}}
+\]
+in one step.  It cannot reach the tail directly or any node in the other
+component in that step.
+
+Struct2vec instead walks on its constructed clique over the entire original
+vertex set \(V\).  Since \(g_k(u,v)>0\) for every pair, every such edge has
+positive transition probability.  Therefore it can reach
+\[
+  \boxed{V\setminus\{w\}}
+\]
+in one step, using the usual convention that the walk has no self-loop.
+\end{solution}
+
+\subsection{Limitation of node2vec (iii)}
+
+Explain why struct2vec must consider multiple structural similarity functions
+$g_k$ during its random walk.
+
+\begin{solution}
+Each \(g_k\) compares structure at a different radius.  A small \(k\) captures
+immediate properties such as degree and the degrees of nearby nodes, but two
+nodes that look identical locally may differ beyond that radius.  Larger
+\(k\) values reveal progressively more global roles, such as whether a node
+lies near a tail, hub, or dense subgraph.  Using several \(g_k\)'s lets the
+walk preserve structural similarity at multiple scales rather than making
+all decisions from one possibly insufficient neighborhood radius.
+\end{solution}
+
+\subsection{Limitation of node2vec (iv)}
+
+Characterize the representations of the two 10-node cliques after running
+struct2vec on the graph.
+
+\begin{solution}
+Struct2vec is not restricted by original-graph connectivity; its transition
+weights compare structural roles directly.  The two pictured components are
+structurally isomorphic, so corresponding nodes across them receive high
+structural-similarity weights and should have similar embeddings.
+
+In particular, let \(b_L\) and \(b_R\) be the green clique nodes attached to
+the two tails.  Then
+\[
+  \vect z_{b_L}\approx\vect z_{b_R}.
+\]
+Likewise, the nine ordinary clique nodes on either side share the same role
+and should form one cross-clique embedding cluster.  The attachment nodes can
+remain distinct from that ordinary-node cluster because their additional tail
+edge gives them a different structural role.  Thus, unlike node2vec,
+struct2vec aligns the two cliques by role even though they lie in disconnected
+components.
+\end{solution}

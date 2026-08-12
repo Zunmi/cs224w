@@ -1,0 +1,251 @@
+\clearpage
+\section{Node Embeddings with TransE}
+
+A multi-relational graph is \(G=(\mathcal E,\mathcal S,\mathcal L)\), where
+\(\mathcal E\) is the entity set, \(\mathcal L\) is the relation set, and
+\(\mathcal S\) contains triples \((h,\ell,t)\). TransE learns entity and
+relation embeddings in \(\R^k\) so that
+\[
+  \vect{h}+\vect{\ell}\approx\vect{t}
+\]
+for observed triples.
+
+For a positive triple, define its corruption set by
+\[
+  \mathcal S'_{(h,\ell,t)}
+  =
+  \left\{(h',\ell,t):h'\in\mathcal E\right\}
+  \cup
+  \left\{(h,\ell,t'):t'\in\mathcal E\right\}.
+\]
+The TransE margin loss is
+\[
+  \mathcal L
+  =
+  \sum_{(h,\ell,t)\in\mathcal S}
+  \sum_{(h',\ell,t')\in\mathcal S'_{(h,\ell,t)}}
+  \left[
+    \gamma+
+    d(\vect{h}+\vect{\ell},\vect{t})
+    -d(\vect{h'}+\vect{\ell},\vect{t'})
+  \right]_+,
+\]
+where \(d\) is Euclidean distance, \([a]_+=\max(0,a)\), and entity embeddings
+are constrained by \(\norm{\vect e}_2=1\).
+
+\subsection{Simplified Loss}
+
+Suppose the objective is replaced by
+\[
+  \mathcal L_{\mathrm{simple}}
+  =
+  \sum_{(h,\ell,t)\in\mathcal S}
+  d(\vect h+\vect\ell,\vect t).
+\]
+Give a non-trivial graph with at least two nodes and one edge, together with
+two-dimensional embeddings, that achieves zero loss but is completely
+uninformative.
+
+\begin{solution}
+Let
+\[
+  \mathcal E=\{a,b\},\qquad
+  \mathcal L=\{r\},\qquad
+  \mathcal S=\{(a,r,b)\}.
+\]
+Choose the two-dimensional embeddings
+\[
+  \vect a=\vect b=
+  \begin{bmatrix}1\\0\end{bmatrix},
+  \qquad
+  \vect r=
+  \begin{bmatrix}0\\0\end{bmatrix}.
+\]
+The entity embeddings satisfy the unit-norm constraint.  Moreover,
+\[
+  d(\vect a+\vect r,\vect b)
+  =
+  \norm{
+    \begin{bmatrix}1\\0\end{bmatrix}
+    +
+    \begin{bmatrix}0\\0\end{bmatrix}
+    -
+    \begin{bmatrix}1\\0\end{bmatrix}
+  }_2
+  =0,
+\]
+so \(\mathcal L_{\mathrm{simple}}=0\).
+
+This representation is useless because the two distinct entities have exactly
+the same embedding.  In fact, for every \(x,y\in\{a,b\}\),
+\[
+  \vect x+\vect r=\vect y,
+\]
+so the embeddings predict every possible \(r\)-triple and cannot determine
+which edge is actually present.
+\end{solution}
+
+\subsection{Removing the Margin}
+
+Now remove \(\gamma\) and optimize
+\[
+  \mathcal L_{\mathrm{no\ margin}}
+  =
+  \sum_{(h,\ell,t)\in\mathcal S}
+  \sum_{(h',\ell,t')\in\mathcal S'_{(h,\ell,t)}}
+  \left[
+    d(\vect h+\vect\ell,\vect t)
+    -d(\vect{h'}+\vect\ell,\vect{t'})
+  \right]_+.
+\]
+Give a non-trivial graph and two-dimensional embeddings that achieve zero
+loss but do not reveal whether a pair of entities is connected by a relation.
+
+\begin{solution}
+Use the same graph
+\[
+  \mathcal E=\{a,b\},\qquad
+  \mathcal L=\{r\},\qquad
+  \mathcal S=\{(a,r,b)\},
+\]
+but choose
+\[
+  \vect a=\vect b=
+  \begin{bmatrix}1\\0\end{bmatrix},
+  \qquad
+  \vect r=
+  \begin{bmatrix}0\\1\end{bmatrix}.
+\]
+The relation embedding is now nonzero.  The positive-triple distance is
+\[
+  d(\vect a+\vect r,\vect b)=1.
+\]
+Every corrupted head or tail is either \(a\) or \(b\), and both have the same
+embedding.  Hence every corrupted triple also has distance
+\[
+  d(\vect{h'}+\vect r,\vect{t'})=1.
+\]
+Each summand in the no-margin loss is therefore
+\[
+  [1-1]_+=0,
+\]
+so \(\mathcal L_{\mathrm{no\ margin}}=0\).
+
+Nevertheless, all entity pairs receive the same score.  The objective only
+requires a positive triple to be no farther away than a corrupted triple; in
+the absence of \(\gamma\), equality is sufficient.  The positive margin is
+what rules out this all-scores-tied solution.
+\end{solution}
+
+\subsection{Removing Entity Normalization}
+
+TransE normally renormalizes every entity embedding to unit length. Describe
+how the algorithm could trivially reduce the loss if this normalization step
+were omitted, and characterize the resulting embeddings.
+
+\begin{solution}
+Consider any collection of unnormalized embeddings
+\(\{\bar{\vect e}\}\) and \(\{\bar{\vect\ell}\}\).  Scale every entity and
+relation by a common factor \(c>0\):
+\[
+  \vect e=c\bar{\vect e},
+  \qquad
+  \vect\ell=c\bar{\vect\ell}.
+\]
+For one positive triple and one of its corruptions, let
+\[
+  d_+
+  =d(\bar{\vect h}+\bar{\vect\ell},\bar{\vect t}),
+  \qquad
+  d_-
+  =d(\bar{\vect{h'}}+\bar{\vect\ell},\bar{\vect{t'}}).
+\]
+Euclidean distance is homogeneous, so the corresponding loss term after
+scaling is
+\[
+  [\gamma+c d_+-c d_-]_+
+  =
+  [\gamma-c(d_--d_+)]_+.
+\]
+Whenever \(d_->d_+\), choosing
+\[
+  c\geq \frac{\gamma}{d_--d_+}
+\]
+makes this term zero.  For a finite training set whose positive--negative
+gaps are all strictly positive, one sufficiently large \(c\) makes every
+hinge term zero.
+
+Thus the optimizer can satisfy the fixed margin partly by increasing the
+scale of all embeddings instead of learning a better normalized geometry.
+The entity and relation norms can grow without bound, points become
+arbitrarily far from the origin, and absolute distances become meaningless
+and numerically unstable.  Unit normalization removes this scale degree of
+freedom and forces the model to improve relative directions and positions
+within a bounded space.
+\end{solution}
+
+\subsection{Limits of TransE Expressiveness}
+
+Give a simple multi-relational graph for which no perfect embedding exists:
+there is no assignment satisfying
+\[
+  \vect u+\vect\ell=\vect v
+  \quad\text{for all }(u,\ell,v)\in\mathcal S
+\]
+while also satisfying
+\[
+  \vect u+\vect\ell\ne\vect v
+  \quad\text{for all }(u,\ell,v)\notin\mathcal S.
+\]
+Use two-dimensional embeddings and explain what the example shows about the
+types of relations TransE can and cannot model.
+
+\begin{solution}
+Let
+\[
+  \mathcal E=\{a,b,c\},\qquad
+  \mathcal L=\{r,s\},
+\]
+and let the only positive triples be
+\[
+  \mathcal S
+  =
+  \{(a,r,b),\ (a,r,c),\ (b,s,a)\}.
+\]
+In particular, \((c,s,a)\notin\mathcal S\).
+
+If a perfect TransE embedding existed, the first two positive triples would
+require
+\[
+  \vect a+\vect r=\vect b,
+  \qquad
+  \vect a+\vect r=\vect c.
+\]
+Therefore
+\[
+  \vect b=\vect c.
+\]
+The third positive triple requires
+\[
+  \vect b+\vect s=\vect a.
+\]
+Substituting \(\vect c=\vect b\) then gives
+\[
+  \vect c+\vect s=\vect a.
+\]
+This predicts \((c,s,a)\) as a positive triple, contradicting
+\((c,s,a)\notin\mathcal S\).  Hence no perfect embedding exists in
+\(\R^2\); in fact, the contradiction holds in every dimension.
+
+The failure comes from the fixed-translation form of TransE.  For a given
+head embedding and relation embedding, \(\vect h+\vect r\) is a single point.
+A one-to-many relation such as
+\[
+  (a,r,b),\qquad(a,r,c)
+\]
+therefore forces all of its tails to share one embedding.  If those tails
+must play different roles elsewhere in the graph, TransE necessarily creates
+false triples.  Thus TransE naturally represents one-to-one translations but
+cannot faithfully express general one-to-many, many-to-one, or many-to-many
+relations while keeping the involved entities distinguishable.
+\end{solution}

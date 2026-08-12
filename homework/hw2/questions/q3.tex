@@ -1,0 +1,206 @@
+\clearpage
+\section{Expressive Power of Knowledge Graph Embeddings}
+
+Consider the following common relational patterns:
+\begin{itemize}
+  \item \textbf{Symmetry:} \(A\) is married to \(B\), and \(B\) is married to
+    \(A\).
+  \item \textbf{Inverse:} \(A\) is teacher of \(B\), and \(B\) is student of
+    \(A\).
+  \item \textbf{Composition:} \(A\) is son of \(B\), and \(C\) is sister of
+    \(B\), so \(C\) is aunt of \(A\).
+\end{itemize}
+
+\subsection{Relational Patterns in TransE}
+
+For each pattern above, determine whether TransE can model it perfectly with
+\[
+  \vect h+\vect\ell=\vect t
+\]
+for every relation. Explain each answer. A zero relation embedding is not
+allowed because it makes related entities indistinguishable.
+
+\begin{solution}
+Write \(\vect m\), \(\vect t\), and \(\vect s\) for the embeddings of
+\emph{married to}, \emph{teacher of}, and \emph{student of}, respectively.
+
+\textbf{Symmetry cannot be modeled.}  For two distinct entities \(A\) and
+\(B\), symmetry would require
+\[
+  \vect a+\vect m=\vect b,
+  \qquad
+  \vect b+\vect m=\vect a.
+\]
+Substituting the first equation into the second gives
+\[
+  \vect a+2\vect m=\vect a,
+\]
+so \(\vect m=\vect 0\).  The first equation then also gives
+\(\vect a=\vect b\).  This is precisely the forbidden degenerate solution;
+therefore TransE cannot represent a non-trivial symmetric relation perfectly.
+
+\textbf{Inverse relations can be modeled.}  The two facts require
+\[
+  \vect a+\vect t=\vect b,
+  \qquad
+  \vect b+\vect s=\vect a.
+\]
+They are consistent exactly when
+\[
+  \vect s=-\vect t.
+\]
+For example, take
+\[
+  \vect a=\begin{bmatrix}1\\0\end{bmatrix},\qquad
+  \vect b=\begin{bmatrix}0\\1\end{bmatrix},\qquad
+  \vect t=\begin{bmatrix}-1\\1\end{bmatrix},\qquad
+  \vect s=\begin{bmatrix}1\\-1\end{bmatrix}.
+\]
+Both entities have unit norm, both relations are nonzero, and the two
+equations hold.
+
+\textbf{Composition can be modeled.}  Let \(\vect r_{\rm son}\),
+\(\vect r_{\rm sister}\), and \(\vect r_{\rm aunt}\) denote the three relation
+embeddings.  The facts in the question require
+\[
+  \vect a+\vect r_{\rm son}=\vect b,
+  \qquad
+  \vect c+\vect r_{\rm sister}=\vect b,
+  \qquad
+  \vect c+\vect r_{\rm aunt}=\vect a.
+\]
+Consequently, the required composition rule is
+\[
+  \vect r_{\rm sister}
+  =\vect r_{\rm aunt}+\vect r_{\rm son}.
+\]
+For a concrete unit-norm realization, choose
+\[
+  \vect a=\begin{bmatrix}1\\0\end{bmatrix},\qquad
+  \vect b=\begin{bmatrix}0\\1\end{bmatrix},\qquad
+  \vect c=\begin{bmatrix}-1\\0\end{bmatrix},
+\]
+and set
+\[
+  \vect r_{\rm son}=\begin{bmatrix}-1\\1\end{bmatrix},\qquad
+  \vect r_{\rm sister}=\begin{bmatrix}1\\1\end{bmatrix},\qquad
+  \vect r_{\rm aunt}=\begin{bmatrix}2\\0\end{bmatrix}.
+\]
+All three relations are nonzero and all three facts are satisfied exactly.
+\end{solution}
+
+\subsection{Relational Patterns in RotatE}
+
+RotatE represents each entity as \(d\) two-dimensional points, equivalently a
+vector in \(\R^{2d}\), and represents a relation by \(d\) rotation angles. For
+each \(i=0,\ldots,d-1\), applying relation \(\ell\) rotates
+\((h_{2i},h_{2i+1})\) clockwise by angle \(\ell_i\). Entity embeddings have
+unit \(\ell_2\) norm.
+
+Determine whether RotatE can model symmetry, inverse relations, and composition
+perfectly, and justify each answer.
+
+\begin{solution}
+Let \(R_{\theta}\) denote clockwise rotation by angle \(\theta\).  Rotations
+compose by adding their angles:
+\[
+  R_{\alpha}R_{\beta}=R_{\alpha+\beta},
+\]
+where angles are understood modulo \(2\pi\), coordinatewise when \(d>1\).
+
+\textbf{Symmetry can be modeled.}  It requires
+\[
+  R_m\vect a=\vect b,
+  \qquad
+  R_m\vect b=\vect a.
+\]
+Thus applying the relation twice must give the identity.  A nonzero choice is
+\(m=\pi\).  For example, with \(d=1\),
+\[
+  \vect a=\begin{bmatrix}1\\0\end{bmatrix},
+  \qquad
+  \vect b=\begin{bmatrix}-1\\0\end{bmatrix},
+\]
+a rotation by \(\pi\) swaps \(A\) and \(B\).
+
+\textbf{Inverse relations can be modeled.}  If the teacher relation has
+angle \(t\), choose the student relation to have angle
+\[
+  s\equiv -t\pmod{2\pi}.
+\]
+Then \(R_sR_t=I\).  For instance, \(t=\pi/2\) and \(s=-\pi/2\) are both
+nonzero and map an entity to another unit vector and back.
+
+\textbf{Composition can be modeled.}  The three facts give
+\[
+  R_{r_{\rm son}}\vect a=\vect b,
+  \qquad
+  R_{r_{\rm sister}}\vect c=\vect b,
+  \qquad
+  R_{r_{\rm aunt}}\vect c=\vect a.
+\]
+Therefore it suffices to choose
+\[
+  r_{\rm sister}
+  \equiv r_{\rm aunt}+r_{\rm son}\pmod{2\pi}.
+\]
+For example, take \(d=1\), \(\vect c=(1,0)^\top\),
+\(r_{\rm aunt}=\pi/3\), \(r_{\rm son}=\pi/2\), and
+\(r_{\rm sister}=5\pi/6\).  Define \(\vect a=R_{\pi/3}\vect c\) and
+\(\vect b=R_{\pi/2}\vect a\).  All entities have unit norm, all relation
+angles are nonzero, and the composition holds exactly.
+\end{solution}
+
+\subsection{A Limitation of RotatE}
+
+Give an example of a graph that RotatE cannot model perfectly. Determine
+whether TransE can model the same graph. Assume relation embeddings cannot be
+zero in either model.
+
+\begin{solution}
+Let
+\[
+  \mathcal E=\{a,b,c,d\},\qquad
+  \mathcal L=\{r,s\},
+\]
+and let the only positive triples be
+\[
+  \mathcal S
+  =\{(a,r,b),\ (a,r,c),\ (b,s,d)\}.
+\]
+In particular, \((c,s,d)\notin\mathcal S\).
+
+Suppose RotatE had a perfect embedding, and write \(R_r\) and \(R_s\) for
+the clockwise rotations associated with the two relations.  The first two
+positive triples imply
+\[
+  R_r\vect a=\vect b,
+  \qquad
+  R_r\vect a=\vect c,
+\]
+and hence \(\vect b=\vect c\).  The third positive triple then implies
+\[
+  R_s\vect c
+  =R_s\vect b
+  =\vect d.
+\]
+Thus RotatE necessarily predicts the nonexistent triple \((c,s,d)\), a
+contradiction.  This proof holds in every dimension and does not rely on
+either relation being zero.
+
+TransE cannot model this graph perfectly either.  Indeed,
+\[
+  \vect a+\vect r=\vect b,
+  \qquad
+  \vect a+\vect r=\vect c
+\]
+again forces \(\vect b=\vect c\).  From
+\(\vect b+\vect s=\vect d\), it follows that
+\[
+  \vect c+\vect s=\vect d,
+\]
+which incorrectly predicts \((c,s,d)\).  Both models apply a fixed,
+deterministic transformation to a head entity for each relation, so neither
+can perfectly represent this one-to-many relation while keeping \(B\) and
+\(C\) distinguishable.
+\end{solution}

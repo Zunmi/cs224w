@@ -1,0 +1,166 @@
+\clearpage
+\section{GNN Expressiveness}
+
+\subsection{Effect of Depth on Expressiveness}
+
+For the two red nodes in the PDF, determine the minimum number of simplified
+sum-aggregation message-passing layers required to produce different
+embeddings.
+
+\begin{solution}
+Let $v_L$ and $v_R$ denote the red nodes in the left and right graphs.  Since
+the update includes both the node itself and its neighbors, their embeddings
+are
+\[
+\begin{array}{c|cccc}
+  \text{layer }l & 0 & 1 & 2 & 3 \\ \hline
+  h_{v_L}^{(l)} & 1 & 2 & 6 & 18 \\
+  h_{v_R}^{(l)} & 1 & 2 & 6 & 17
+\end{array}
+\]
+For example, the neighbor of either red node has embedding 4 after one layer.
+After two layers, that neighbor has embedding 12 in the left graph but 11 in
+the right graph, which reaches the red node in the third layer.  Thus the
+minimum required depth is
+\[
+  \boxed{3\text{ message-passing layers}}.
+\]
+\end{solution}
+
+\subsection{Random Walk Matrix}
+
+\begin{enumerate}[label=(\roman*)]
+  \item Write the random-walk transition matrix $M$ using the node order in
+    the graph.
+  \item Find the eigenvector satisfying $\vect{r}=M\vect{r}$, normalize it
+    using the $\ell_2$ norm, and round each entry to two decimal places.
+\end{enumerate}
+
+\begin{solution}
+The edges are
+$\{1,2\},\{1,4\},\{2,4\},\{3,4\}$, so the node degrees are
+$(2,2,1,3)$.  Using the column-vector convention from the question,
+$M_{ij}$ is the probability of moving from node $j$ to node $i$.  Hence
+\[
+  M=
+  \begin{bmatrix}
+    0           & \tfrac12 & 0 & \tfrac13 \\
+    \tfrac12    & 0        & 0 & \tfrac13 \\
+    0           & 0        & 0 & \tfrac13 \\
+    \tfrac12    & \tfrac12 & 1 & 0
+  \end{bmatrix}.
+\]
+For an undirected graph, the stationary vector is proportional to the degree
+vector.  Therefore an eigenvector satisfying $\vect r=M\vect r$ is
+$(2,2,1,3)^\top$.  Its $\ell_2$ norm is $\sqrt{18}$, so the requested
+normalized vector is
+\[
+  \vect r
+  =\frac{1}{\sqrt{18}}
+    \begin{bmatrix}2\\2\\1\\3\end{bmatrix}
+  \approx
+    \boxed{[0.47,0.47,0.24,0.71]^\top}.
+\]
+\end{solution}
+
+\subsection{Relation to Random Walk (i)}
+
+For mean aggregation without a learned transformation or nonlinearity, express
+the corresponding random-walk transition matrix using adjacency matrix $A$ and
+degree matrix $D$.
+
+\begin{solution}
+With the homework's column-distribution convention, the transition matrix is
+\[
+  \boxed{M=AD^{-1}}.
+\]
+Indeed, $M_{ju}=A_{ju}/d_u$ is the probability of moving from node $u$ to
+node $j$.  Therefore the expected layer-$l$ embedding after one step from
+$u$ is
+\[
+  \sum_j M_{ju}\vect h_j^{(l)}
+  =\frac{1}{d_u}\sum_{j\in\mathcal N_u}\vect h_j^{(l)}
+  =\vect h_u^{(l+1)}.
+\]
+Equivalently, if node embeddings are stacked as rows of $H^{(l)}$, the GNN
+update is $H^{(l+1)}=D^{-1}AH^{(l)}=M^\top H^{(l)}$.
+\end{solution}
+
+\subsection{Relation to Random Walk (ii)}
+
+Repeat 4.3 for the aggregation rule with a one-half skip connection:
+\[
+  \vect{h}_i^{(l+1)}
+  = \frac{1}{2}\vect{h}_i^{(l)}
+  + \frac{1}{2|\mathcal{N}_i|}
+    \sum_{j\in\mathcal{N}_i}\vect{h}_j^{(l)}.
+\]
+
+\begin{solution}
+The corresponding lazy-random-walk transition matrix is
+\[
+  \boxed{M_{\mathrm{skip}}=\frac12 I+\frac12 AD^{-1}}.
+\]
+The term $\tfrac12 I$ gives a self-transition probability of $1/2$, while the
+remaining probability is distributed uniformly among the current node's
+neighbors.  In row-stacked embedding form, the update operator is its
+transpose, $\tfrac12 I+\tfrac12D^{-1}A$.
+\end{solution}
+
+\subsection{Over-Smoothing Effect}
+
+Show that repeated mean aggregation converges as $l\to\infty$ when the graph is
+connected and has no bipartite components. Relate the result to the Markov
+Convergence Theorem.
+
+\begin{solution}
+Let
+\[
+  P=D^{-1}A,
+  \qquad H^{(l+1)}=PH^{(l)}.
+\]
+Because the graph is connected, the associated random walk is irreducible.
+Because the connected graph is non-bipartite, the walk is also aperiodic.
+The Markov Convergence Theorem therefore gives
+\[
+  P^l\longrightarrow \vect{1}\vect{\pi}^\top,
+  \qquad
+  \pi_i=\frac{d_i}{\sum_j d_j}.
+\]
+Consequently,
+\[
+  H^{(l)}=P^lH^{(0)}
+  \longrightarrow
+  \vect{1}\vect{\pi}^\top H^{(0)}.
+\]
+Every row of the limiting matrix is the same degree-weighted average of the
+initial node embeddings.  Thus every node embedding converges, and all nodes
+become indistinguishable under this repeated mean aggregation; this is the
+over-smoothing effect.
+\end{solution}
+
+\subsection{Learning BFS with a GNN}
+
+Construct a one-dimensional GNN that exactly executes BFS. Specify:
+\begin{enumerate}[label=(\alph*)]
+  \item a message function,
+  \item an aggregation function, and
+  \item an update rule.
+\end{enumerate}
+
+\begin{solution}
+Let $h_v^{(t)}\in\{0,1\}$ indicate whether BFS has reached node $v$ by step
+$t$.  The following functions execute BFS exactly:
+\begin{align*}
+  \text{message:}\quad
+    &m_{u\to v}^{(t)}=h_u^{(t)},\\
+  \text{aggregation:}\quad
+    &a_v^{(t)}=\max_{u\in\mathcal N_v}m_{u\to v}^{(t)},\\
+  \text{update:}\quad
+    &h_v^{(t+1)}=\max\!\left(h_v^{(t)},a_v^{(t)}\right).
+\end{align*}
+For an empty neighborhood, define the aggregate to be 0.  The update keeps
+every previously reached node at 1 and changes an unreached node to 1 exactly
+when it has a reached neighbor.  Hence after $t$ layers, precisely the nodes at
+distance at most $t$ from the source have embedding 1.
+\end{solution}

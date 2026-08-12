@@ -1,0 +1,84 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=1in,headheight=15pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{fancyhdr}
+\usepackage[colorlinks=true,linkcolor=MidnightBlue,urlcolor=RoyalBlue]{hyperref}
+
+% ---------------------------------------------------------------------------
+% Student information: update these fields before submission.
+% ---------------------------------------------------------------------------
+\newcommand{\studentname}{Zunmi}
+\newcommand{\studentid}{None}
+\newcommand{\studentemail}{13029579578@163.com}
+\newcommand{\collaborators}{None}
+
+% Put any answer figures in the figures/ directory.
+\graphicspath{{figures/}}
+
+\definecolor{solutioncolor}{HTML}{111111}
+\definecolor{todocolor}{HTML}{8A3B12}
+
+\newenvironment{solution}
+  {\par\medskip\noindent
+   \textcolor{solutioncolor}{\textbf{\sffamily Solution.}}\quad}
+  {\par\medskip}
+
+\newcommand{\todo}[1]{\textcolor{todocolor}{\textit{#1}}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vect}[1]{\bm{#1}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\sffamily CS224W: Machine Learning with Graphs}
+\rhead{\sffamily Homework 1}
+\cfoot{\thepage}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\setlist{itemsep=0.25em,topsep=0.4em}
+
+\begin{document}
+
+\begin{center}
+  {\Large\bfseries CS224W Homework 1}\\[0.5em]
+  {\large Fall 2021}\\[1em]
+  \begin{tabular}{rl}
+    Name: & \studentname \\
+    SUNet ID: & \studentid \\
+    Email: & \studentemail
+  \end{tabular}
+\end{center}
+
+\vspace{0.75em}
+\hrule
+\vspace{1em}
+
+\input{questions/q1}
+\input{questions/q2}
+\input{questions/q3}
+\input{questions/q4}
+\input{questions/q5}
+
+\clearpage
+\section*{Honor Code}
+
+\noindent
+\textbf{Honor Code acknowledgement:}
+I have read and understood the Stanford Honor Code before submitting my work.
+
+\noindent
+\textbf{Collaboration:} \collaborators
+
+\end{document}

@@ -1,0 +1,206 @@
+\section{GCN}
+
+Let \(G=(V,E)\) have node features \(\vect{x}(v)\). Initialize
+\(\vect{h}_v^{(0)}=\vect{x}(v)\), and for each iteration \(k\) update
+\begin{align*}
+  \vect{h}_{\mathcal N(v)}^{(k)}
+    &=\operatorname{aggregate}
+      \left(\left\{\vect{h}_u^{(k-1)}:u\in\mathcal N(v)\right\}\right),\\
+  \vect{h}_v^{(k)}
+    &=\operatorname{combine}
+      \left(\vect{h}_v^{(k-1)},
+            \vect{h}_{\mathcal N(v)}^{(k)}\right).
+\end{align*}
+The argument of \(\operatorname{aggregate}\) is a multiset. A graph-level
+embedding is obtained using
+\[
+  \operatorname{readout}
+  \left(\left\{\vect{h}_v^{(K)}:v\in V\right\}\right).
+\]
+
+\subsection{Graph Isomorphism}
+
+Determine whether the two graphs shown in Question 1.1 of the homework PDF are
+isomorphic. If they are, give a bijection between their vertices that preserves
+edges. If they are not, identify a structure present in only one graph.
+
+\begin{solution}
+The two graphs are isomorphic.  Define the bijection
+\[
+\begin{array}{c|cccccccc}
+  v & 1&2&3&4&5&6&7&8\\ \hline
+  \phi(v)&A&D&E&H&C&B&G&F
+\end{array}
+\]
+from the numbered graph to the lettered graph.  It is enough to check the
+neighborhoods of nodes \(1,2,3,4\), since every edge in the numbered graph
+has one endpoint in this set:
+\begin{align*}
+  \phi(\mathcal N(1))
+    &=\phi(\{5,6,7\})=\{C,B,G\}=\mathcal N(A),\\
+  \phi(\mathcal N(2))
+    &=\phi(\{5,6,8\})=\{C,B,F\}=\mathcal N(D),\\
+  \phi(\mathcal N(3))
+    &=\phi(\{5,7,8\})=\{C,G,F\}=\mathcal N(E),\\
+  \phi(\mathcal N(4))
+    &=\phi(\{6,7,8\})=\{B,G,F\}=\mathcal N(H).
+\end{align*}
+Thus, for every pair \(u,v\),
+\[
+  \{u,v\}\in E_1
+  \quad\Longleftrightarrow\quad
+  \{\phi(u),\phi(v)\}\in E_2.
+\]
+Therefore \(\phi\) is an isomorphism.
+\end{solution}
+
+\subsection{Aggregation Expressiveness}
+
+Consider the three aggregation functions
+\begin{align*}
+  \left[
+  \operatorname{aggregate}_{\max}
+  \left(\left\{\vect{h}_u^{(k-1)}:u\in\mathcal N(v)\right\}\right)
+  \right]_i
+  &=\max_{u\in\mathcal N(v)}
+    \left[\vect{h}_u^{(k-1)}\right]_i,\\
+  \operatorname{aggregate}_{\mathrm{mean}}
+  \left(\left\{\vect{h}_u^{(k-1)}:u\in\mathcal N(v)\right\}\right)
+  &=\frac{1}{|\mathcal N(v)|}
+    \sum_{u\in\mathcal N(v)}\vect{h}_u^{(k-1)},\\
+  \operatorname{aggregate}_{\mathrm{sum}}
+  \left(\left\{\vect{h}_u^{(k-1)}:u\in\mathcal N(v)\right\}\right)
+  &=\sum_{u\in\mathcal N(v)}\vect{h}_u^{(k-1)}.
+\end{align*}
+
+Give two graphs \(G_1,G_2\), initial node features, and nodes
+\(v_1\in V_1\), \(v_2\in V_2\) such that
+\(\vect{h}_{v_1}^{(0)}=\vect{h}_{v_2}^{(0)}\). After one update, the two
+nodes must remain equal under mean and max aggregation but become different
+under sum aggregation.
+
+\begin{solution}
+Let \(G_1\) contain one edge \(\{v_1,u\}\), and let \(G_2\) contain the two
+edges \(\{v_2,a\}\) and \(\{v_2,b\}\).  Assign scalar initial features
+\[
+  h_{v_1}^{(0)}=h_{v_2}^{(0)}=0,
+  \qquad
+  h_u^{(0)}=h_a^{(0)}=h_b^{(0)}=1,
+\]
+and choose
+\[
+  \operatorname{combine}(x,y)=x+y.
+\]
+The neighbor-feature multisets of the distinguished nodes are
+\[
+  \left\{h_u^{(0)}:u\in\mathcal N(v_1)\right\}=\{1\},
+  \qquad
+  \left\{h_u^{(0)}:u\in\mathcal N(v_2)\right\}=\{1,1\}.
+\]
+Consequently,
+\[
+\begin{array}{c|cc}
+  \text{aggregator}
+    & h_{\mathcal N(v_1)}^{(1)}
+    & h_{\mathcal N(v_2)}^{(1)}\\ \hline
+  \max  & 1&1\\
+  \mathrm{mean}&1&1\\
+  \mathrm{sum}&1&2
+\end{array}
+\]
+Since both distinguished nodes have initial feature zero, the combine step
+does not change these values.  Hence max and mean give equal updated features,
+whereas sum gives
+\[
+  h_{v_1}^{(1)}=1\ne 2=h_{v_2}^{(1)}.
+\]
+The example works because max and mean discard the multiplicity of repeated
+neighbor features, while sum preserves it.
+\end{solution}
+
+\subsection{Relation to the Weisfeiler--Lehman Test}
+
+At each iteration, the Weisfeiler--Lehman (WL) test updates each node
+representation using its previous representation together with the multiset of
+its neighbors' previous representations.
+
+Prove that the neural graph-isomorphism test above is at most as powerful as
+the WL test. More precisely, for two non-isomorphic graphs updated for \(K\)
+iterations using the same \(\operatorname{aggregate}\) and
+\(\operatorname{combine}\), show that
+\[
+  \operatorname{readout}
+  \left(\left\{\vect{h}_v^{(K)}:v\in V_1\right\}\right)
+  \ne
+  \operatorname{readout}
+  \left(\left\{\vect{h}_v^{(K)}:v\in V_2\right\}\right)
+\]
+implies that the WL test also declares the graphs non-isomorphic.
+
+\begin{solution}
+Let \(l_v^{(k)}\) be the WL label of node \(v\) after iteration \(k\).  The
+WL hash is injective on the pair consisting of the node's previous label and
+the multiset of its neighbors' previous labels.  We first prove by induction
+that, for nodes from either graph,
+\[
+  l_u^{(k)}=l_v^{(k)}
+  \quad\Longrightarrow\quad
+  \vect h_u^{(k)}=\vect h_v^{(k)}.
+  \tag{1}
+\]
+
+For \(k=0\), both algorithms initialize from the same node feature:
+\[
+  l_v^{(0)}=\vect x(v)=\vect h_v^{(0)}.
+\]
+Thus (1) holds at iteration zero.
+
+Assume (1) holds after iteration \(k-1\), and suppose
+\(l_u^{(k)}=l_v^{(k)}\).  Injectivity of the WL hash implies both
+\[
+  l_u^{(k-1)}=l_v^{(k-1)}
+\]
+and equality of multisets
+\[
+  \left\{l_a^{(k-1)}:a\in\mathcal N(u)\right\}
+  =
+  \left\{l_b^{(k-1)}:b\in\mathcal N(v)\right\}.
+\]
+By the induction hypothesis, equal previous WL labels have equal previous
+neural embeddings.  Applying this implication element-by-element, with
+multiplicity, gives
+\[
+  \left\{\vect h_a^{(k-1)}:a\in\mathcal N(u)\right\}
+  =
+  \left\{\vect h_b^{(k-1)}:b\in\mathcal N(v)\right\}.
+\]
+The shared, permutation-invariant aggregate function therefore produces the
+same neighborhood embedding for \(u\) and \(v\).  Their own previous
+embeddings are also equal by the induction hypothesis, so the shared combine
+function gives
+\[
+  \vect h_u^{(k)}=\vect h_v^{(k)}.
+\]
+This completes the induction.
+
+Now argue by contradiction.  Suppose the WL test does not distinguish
+\(G_1\) and \(G_2\) after \(K\) iterations.  Then their final WL-label
+multisets, including multiplicities, are equal:
+\[
+  \left\{l_v^{(K)}:v\in V_1\right\}
+  =
+  \left\{l_v^{(K)}:v\in V_2\right\}.
+\]
+By (1), a node's neural embedding is a deterministic function of its WL
+label.  Hence the two final neural-embedding multisets are also equal:
+\[
+  \left\{\vect h_v^{(K)}:v\in V_1\right\}
+  =
+  \left\{\vect h_v^{(K)}:v\in V_2\right\}.
+\]
+Applying the same readout function to equal multisets must give equal graph
+embeddings, contradicting the hypothesis that the two readouts differ.
+Therefore, whenever the neural model distinguishes the graphs, the WL test
+also distinguishes them.  The neural model is thus at most as powerful as
+the WL test.
+\end{solution}

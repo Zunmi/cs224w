@@ -1,0 +1,80 @@
+\clearpage
+\section{Relational Classification II}
+
+Use the web-page graph, word vectors, classifiers $f$ and $g$, and synchronous
+LinkV construction specified in the homework PDF.
+
+\subsection{Bootstrap Phase}
+
+\begin{solution}
+Applying $f$ to each node's WordV gives
+\[
+\begin{array}{c|ccccccc}
+  \text{node} & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\ \hline
+  \text{WordV} & 010 & 111 & 101 & 101 & 101 & 010 & 001 \\
+  Y^{(0)} & 0 & 1 & 1 & 1 & 1 & 0 & 0
+\end{array}
+\]
+\end{solution}
+
+\subsection{Iteration 1}
+
+\begin{solution}
+The incoming-neighbor sets read from the directed graph are
+\[
+\begin{aligned}
+  \mathcal N_1^{\mathrm{in}}&=\{2,4\}, &
+  \mathcal N_2^{\mathrm{in}}&=\{4\}, &
+  \mathcal N_3^{\mathrm{in}}&=\{5\}, &
+  \mathcal N_4^{\mathrm{in}}&=\{2\}, \\
+  \mathcal N_5^{\mathrm{in}}&=\{1\}, &
+  \mathcal N_6^{\mathrm{in}}&=\{5,7\}, &
+  \mathcal N_7^{\mathrm{in}}&=\{3,6\}. &&
+\end{aligned}
+\]
+Using the bootstrap labels synchronously, the first iteration is
+\[
+\begin{array}{c|ccccccc}
+  \text{node} & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\ \hline
+  \text{LinkV}^{(1)}
+    & (0,1) & (0,1) & (0,1) & (0,1) & (1,0) & (1,1) & (1,1) \\
+  Y^{(1)}
+    & 0 & 1 & 1 & 1 & 0 & 0 & 0
+\end{array}
+\]
+Node 5 is the only node whose label changes in this iteration: its incoming
+neighbor, node 1, has label 0, so $I_0=1$ and $g$ outputs 0.
+\end{solution}
+
+\subsection{Iteration 2}
+
+\begin{solution}
+Recomputing every LinkV from $Y^{(1)}$ gives
+\[
+\begin{array}{c|ccccccc}
+  \text{node} & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\ \hline
+  \text{LinkV}^{(2)}
+    & (0,1) & (0,1) & (1,0) & (0,1) & (1,0) & (1,0) & (1,1) \\
+  Y^{(2)}
+    & 0 & 1 & 0 & 1 & 0 & 0 & 0
+\end{array}
+\]
+Here node 3 changes from 1 to 0 because its only incoming neighbor, node 5,
+now has label 0.
+\end{solution}
+
+\subsection{Convergence}
+
+\begin{solution}
+The labels have converged.  Indeed, using
+\[
+  Y^{(2)}=(0,1,0,1,0,0,0)
+\]
+to compute the next iteration yields the same LinkV for nodes 1--6.  For node
+7, LinkV changes from $(1,1)$ to $(1,0)$ because node 3 is now labeled 0, but
+$I_0$ remains 1, so its label remains 0.  Therefore
+\[
+  \boxed{Y^{(3)}=Y^{(2)}=(0,1,0,1,0,0,0)},
+\]
+and no node changes label in the next iteration.
+\end{solution}

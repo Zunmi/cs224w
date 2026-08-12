@@ -1,0 +1,120 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsbsy}
+\usepackage{bbm}
+\usepackage{url}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{fancyhdr}
+\usepackage{enumerate}
+\usepackage{tikz}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage[colorlinks=true,urlcolor=blue]{hyperref}
+
+\newcommand*\Bell{\ensuremath{\boldsymbol\ell}}
+
+
+\oddsidemargin  0in \evensidemargin 0in \topmargin -0.5in
+\headheight 0.25in \headsep 0.25in
+\textwidth   6.5in \textheight 9in %\marginparsep 0pt \marginparwidth 0pt
+\parskip 1.5ex  \parindent 0ex \footskip 20pt
+
+\newcommand{\note}[1]{\textsf{{\textcolor{red}{[[#1]]}}}}
+\newcommand{\boxcomment}[1]{\noindent\fbox{\parbox{\textwidth}{#1}}\medskip\\}
+
+\newcommand{\xhdr}[1]{\paragraph{\bf{#1}}}
+\newcommand{\subquestion}[1]{\subsubsection*{{#1}}}
+
+\newcommand{\mysmall}{\textnormal{small}}
+\newcommand{\dataset}[1]{{\tt #1}}
+
+\newif\ifsolution
+\solutiontrue
+%\solutionfalse  % UNCOMMENT TO TURN OFF SOLUTIONS
+\ifsolution
+\newcommand{\Solution}[1]{{\medskip \color{red} \bf $\bigstar$~\sf \textbf{Solution}~$\bigstar$ \sf #1 } \bigskip}
+\else
+\newcommand{\Solution}[1]{}
+\fi
+%\newcommand{\Mistake}[2]{\paragraph{\bf $\blacksquare$ COMMON MISTAKE #1:} {\sf #2} \bigskip}
+
+
+%%---------------------------------------------------------------------------
+%%      Theorems and other environments:
+%%---------------------------------------------------------------------------
+\newtheorem{thm}{Theorem}%[lecture]
+\newtheorem{prop}{Proposition}%[lecture]
+\newtheorem{lemma}{Lemma}%[lecture]
+\newtheorem{result}{Result}%[lecture]
+\newtheorem{cor}{Corollary}%[lecture]
+\newtheorem{claim}{Claim}%[lecture]
+\newenvironment{proof}{{\bf Proof: }}{\hfill\rule{2mm}{2mm}}
+%\newenvironment{solution}{{\bf Solution: }}{\hfill\rule{2mm}{2mm}}
+\newcounter{example}
+\newenvironment{example}[1][]
+ {\refstepcounter{example}{\bf Example~\arabic{example}~#1}}{}
+ \renewcommand{\theexample}{\arabic{example}}
+\newcounter{problem}
+\newenvironment{problem}[1][]
+ {\refstepcounter{problem}{\bf Problem~\arabic{lecture}.\arabic{problem}~#1}}{}
+ \renewcommand{\theproblem}{\arabic{lecture}.\arabic{problem}}
+
+\newcounter{definition}
+\newenvironment{definition}[1][Definition]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+%\newcounter{algorithm}
+%\newenvironment{algorithm}[1][]
+ %{\refstepcounter{algorithm}{\bf Algorithm~\arabic{algorithm}~#1}}{}
+ %\renewcommand{\thedefinition}{\arabic{algorithm}}
+
+%%%----------------------------------------------------------------------------- 
+
+%%%-----------------------------------------------------------------------------
+%%% Header
+\newfont{\bssten}{cmssbx10}
+\newfont{\bssnine}{cmssbx10 scaled 900}
+\newfont{\bssdoz}{cmssbx10 scaled 1200}
+\pagestyle{fancy}  % use this?
+ \fancyhead{\bssnine CS224W: Machine Learning with Graphs - Homework 3}
+ \fancyhead[RE]{} \fancyhead[LO]{}
+ \fancyhead[LE]{\bssnine \arabic{page}} \fancyhead[RO]{\bssnine \arabic{page}}
+ \lfoot{} \cfoot{} \rfoot{}
+%%%-----------------------------------------------------------------------------
+%
+\begin{document}
+\thispagestyle{empty}
+\boxcomment{
+{\bf \textsf{CS224W: Machine Learning with Graphs \hfill Fall 2021}}\medskip
+
+\centerline{\LARGE \bf \textsf{ Homework 3}}\medskip
+
+%{\sl \hfill  \textsf{Individual study exercise. \\
+%This problem set should be completed at the course beginning.} \hfill}
+
+{\sl \hfill  \textsf{Due 11:59pm PT Thursday November 11 2021\\
+john doe \ \ jdoe@stanford.edu} \hfill}
+}\bigskip
+
+%%-----------------------------------------------------------------------------
+%%Questions
+\section*{Question 1: GraphRNN (20 points)}
+\subsection*{Q1.1 (12 points)}
+\Solution{...}
+\subsection*{Q1.2 (8 points)}
+\section*{Question 2: Subgraphs and Order Embeddings (35 points)}
+\subsection*{Q2.1 Transitivity (8 points)}
+\subsection*{Q2.2 Anti-symmetry (8 points)}
+\subsection*{Q2.3 Common subgraph (4 points)}
+\subsection*{Q2.4 Order embeddings for graphs that are not subgraphs of each other (5 points)}
+\subsection*{Q2.5 Limitation of 2-dimensional order embedding space (10 points)}
+
+\section*{Honor Code (0 points)}
+(X) I have read and understood Stanford Honor Code before I submitted my work.\\
+\noindent
+**Collaboration: Write down the names \& SUNetIDs of students you collaborated with on Homework 3 (None if you didn't).** \\
+\noindent
+**Note: Read our website on our policy about collaboration!**
+
+\end{document}
