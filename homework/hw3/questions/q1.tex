@@ -1,0 +1,182 @@
+\section{GraphRNN (20 points)}
+
+Graph generation models produce entire graphs for tasks such as predicting
+graph evolution, generating new graph instances, and detecting anomalous
+graphs. GraphRNN generates a graph by sequentially adding nodes and edges.
+Given a graph \(G\) and a node ordering \(\pi\), it maps the graph to a unique
+sequence of node- and edge-addition decisions \(S^\pi\).
+
+When a new node is added, GraphRNN predicts whether it connects to each
+existing node. For example, the node-level step for the fourth node consists
+of the three binary decisions
+\[
+  S_{4,1}^{\pi},\qquad S_{4,2}^{\pi},\qquad S_{4,3}^{\pi}.
+\]
+
+\subsection{BFS Generation Sequence (12 points)}
+
+Consider the grid graph shown in Question 1.1 of the official homework PDF.
+GraphRNN adds its nodes in breadth-first-search order, starting at node \(A\).
+When exploring a node's neighbors, visit them in alphabetical order. For each
+new node, report a \(1\) for every edge that should be added to an existing
+node and a \(0\) otherwise.
+
+Give the node order followed by the edge-level predictions for every node.
+
+\begin{solution}
+\textbf{Node order.}
+Starting from \(A\), the alphabetically ordered neighbors of \(A\) are
+\(B,D\).  Processing \(B\) next discovers \(C,E\), while processing \(D\)
+discovers no new node.  Finally, processing \(C\) discovers \(F\).  Therefore
+the BFS ordering is
+\[
+  \pi=(A,B,D,C,E,F).
+\]
+
+\textbf{Edge-level predictions.}
+For each new node, the entries below are listed against the preceding nodes
+in the order \(\pi\):
+\[
+\begin{array}{c|c|c}
+\text{new node} & \text{preceding nodes} & \text{predictions} \\ \hline
+A & \text{none} & \text{none} \\
+B & A & (1) \\
+D & A,B & (1,0) \\
+C & A,B,D & (0,1,0) \\
+E & A,B,D,C & (0,1,1,0) \\
+F & A,B,D,C,E & (0,0,0,1,1)
+\end{array}
+\]
+Here \(1\) denotes an edge to the corresponding preceding node and \(0\)
+denotes no edge.
+\end{solution}
+
+\subsection{Advantages of BFS Ordering (8 points)}
+
+Explain two advantages of using a BFS node ordering for graph generation
+instead of a random node ordering. You may use claims from the original
+GraphRNN paper.
+
+\begin{solution}
+\begin{enumerate}[label=\textbf{\arabic*.},leftmargin=*]
+  \item \textbf{BFS greatly reduces the number of redundant sequential
+    representations of the same graph.}
+
+    Let \(G\) have \(n\) nodes and let \(\Pi\) be the set of its \(n!\) node
+    permutations.  With an unrestricted ordering, every \(\pi\in\Pi\) can
+    produce a different training sequence
+    \[
+      S^\pi=f_S(G,\pi).
+    \]
+    These sequences describe the same unlabeled graph, but an autoregressive
+    model sees them as different ordered targets.  It would therefore have to
+    spread probability mass over, and learn the dependencies in, potentially
+    \(n!\) different representations of one graph.
+
+    GraphRNN instead applies a deterministic BFS procedure after choosing a
+    starting node and a tie-breaking order:
+    \[
+      b_G(\pi)=\operatorname{BFS}(G,\pi),\qquad
+      S^\pi=f_S\bigl(G,b_G(\pi)\bigr).
+    \]
+    The map \(b_G\) is many-to-one.  For example, changing the relative
+    positions in \(\pi\) of vertices that BFS does not compare can leave the
+    starting node, every neighbor-discovery order, and hence the complete BFS
+    output unchanged.  Thus, if
+    \[
+      \mathcal B(G)
+      =\{\,\operatorname{BFS}(G,\pi):\pi\in\Pi\,\},
+    \]
+    then
+    \[
+      |\mathcal B(G)|\leq |\Pi|=n!,
+    \]
+    and the inequality is strict for many graphs.  The model only needs to
+    learn the sequences induced by \(\mathcal B(G)\), rather than those
+    induced by every arbitrary permutation.
+
+    This restriction does not remove any graph from the model's support.
+    Every graph has at least one BFS traversal, and the full edge decisions
+    associated with any such traversal reconstruct exactly the original
+    graph.  BFS therefore removes only redundant orderings, not graph
+    structures.  Fewer equivalent targets mean less ordering-induced
+    variation, less probability mass split among artificial representations,
+    and an easier sequence-learning problem.  The reduction need not be
+    strict in the worst case---a star graph can still have \(n!\) BFS
+    orderings---but it is substantial for many graph families.
+
+  \item \textbf{BFS localizes possible edges and shortens every edge-generation
+    sequence.}
+
+    Under an arbitrary ordering \(v_1,\ldots,v_n\), the adjacency vector for
+    the newly added node \(v_i\) is
+    \[
+      S_i=(A_{1,i},A_{2,i},\ldots,A_{i-1,i})^\top.
+    \]
+    It has \(i-1\) entries because, without additional structure, \(v_i\)
+    might be adjacent to any preceding node.  Consequently, generating an
+    \(n\)-node graph requires
+    \[
+      \sum_{i=2}^{n}(i-1)
+      =\frac{n(n-1)}{2}
+      =\Theta(n^2)
+    \]
+    binary edge predictions.
+
+    BFS gives a stronger locality property.  Consider the instant at which a
+    new vertex \(v_i\) is first discovered.  Let \(\mathcal F_i\) consist of
+    the vertex currently being expanded together with the already discovered
+    but not yet expanded vertices in the BFS queue.  We claim that every
+    preceding neighbor of \(v_i\) belongs to \(\mathcal F_i\).
+
+    To prove the claim, suppose instead that \(v_i\) were adjacent to a
+    preceding vertex \(u\notin\mathcal F_i\).  Such a vertex \(u\) was fully
+    processed before \(v_i\) was discovered.  BFS examines every edge incident
+    to \(u\) while processing \(u\).  It would therefore have discovered and
+    enqueued \(v_i\) at that earlier time, contradicting the assumption that
+    \(v_i\) is first discovered now.  Hence old, completed parts of the BFS
+    traversal cannot contain a neighbor of the new node; all possible
+    preceding neighbors lie in the current frontier.
+
+    Because BFS processes nodes in FIFO discovery order, this frontier is a
+    suffix of the preceding node sequence.  Let
+    \[
+      M=\max_i |\mathcal F_i|
+    \]
+    be its maximum size.  It is therefore sufficient to retain at most the
+    last \(M\) entries of each adjacency vector:
+    \[
+      S_i=
+      \bigl(
+        A_{\max(1,i-M),i},\ldots,A_{i-1,i}
+      \bigr)^\top,
+    \]
+    with padding when \(i-1<M\).  All omitted entries are guaranteed to be
+    zero by the BFS argument above.  The total number of predictions is now
+    bounded by
+    \[
+      \sum_{i=2}^{n}\min(M,i-1)
+      \leq M(n-1)
+      =O(Mn).
+    \]
+    The GraphRNN analysis relates \(M\) to the largest BFS layer:
+    \[
+      M
+      =O\left(
+        \max_{1\leq d\leq\operatorname{diam}(G)}
+        \bigl|\{v:\operatorname{dist}(v,v_1)=d\}\bigr|
+      \right).
+    \]
+    Thus, whenever the BFS frontier is much smaller than the whole graph
+    (\(M\ll n\)), generation is sub-quadratic.  For example, a path has
+    \(M=O(1)\), giving \(O(n)\) predictions, while a roughly square grid has
+    \(M=O(\sqrt n)\), giving \(O(n^{3/2})\).  Dense graphs or stars may have
+    \(M=\Theta(n)\), so the worst case remains quadratic.
+
+    Besides reducing computation and memory, the fixed and shorter
+    edge-level sequences remove many guaranteed-zero decisions and shorten
+    the dependencies that the edge-level RNN must learn.  BFS therefore makes
+    both training and sampling more scalable than a random ordering, which
+    can place adjacent vertices arbitrarily far apart.
+\end{enumerate}
+\end{solution}

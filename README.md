@@ -51,7 +51,7 @@ cd homework/hw1
 latexmk -pdf main.tex
 ```
 
-Replace `hw1` with `hw2` for the second assignment. Homework 3 currently uses `homework/hw3_main.tex`.
+Replace `hw1` with `hw2` for the second assignment. Homework 3 uses `homework/hw3/main.tex`.
 
 ## Notes
 

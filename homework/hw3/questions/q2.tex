@@ -1,0 +1,427 @@
+\clearpage
+\section{Subgraphs and Order Embeddings (35 points)}
+
+For this question, graph \(A\) is a subgraph of graph \(B\) when some induced
+subgraph of \(B\) is graph-isomorphic to \(A\). Anchor nodes are not considered,
+and every coordinate of an order embedding is non-negative.
+
+The order-embedding constraint is
+\[
+  A\text{ is a subgraph of }B
+  \quad\Longleftrightarrow\quad
+  \vect{z}_A[i]\leq \vect{z}_B[i]
+  \quad\text{for every dimension }i.
+\]
+Equivalently, write \(\vect{z}_A\preceq\vect{z}_B\) for coordinate-wise
+inequality.
+
+\subsection{Transitivity (8 points)}
+
+Show that the subgraph relation is transitive: if graph \(A\) is a subgraph of
+graph \(B\), and graph \(B\) is a subgraph of graph \(C\), then graph \(A\) is a
+subgraph of graph \(C\).
+
+Use the subgraph-isomorphism definition: if \(A\) is a subgraph of \(B\), then
+there is a bijection \(f\) from \(V_A\) to a subset of \(V_B\) such that the
+subgraph of \(B\) induced by
+\[
+  \{f(v):v\in V_A\}
+\]
+is graph-isomorphic to \(A\).
+
+\begin{solution}
+Write the three graphs as
+\[
+  A=(V_A,E_A),\qquad B=(V_B,E_B),\qquad C=(V_C,E_C).
+\]
+Because \(A\) is a subgraph of \(B\), there is a subset
+\(U_B\subseteq V_B\) and a bijection
+\[
+  f:V_A\longrightarrow U_B
+\]
+such that \(f\) is a graph isomorphism from \(A\) to the induced subgraph
+\(B[U_B]\).  In particular, for every \(u,v\in V_A\),
+\[
+  \{u,v\}\in E_A
+  \quad\Longleftrightarrow\quad
+  \{f(u),f(v)\}\in E_B.
+  \tag{1}
+\]
+Similarly, because \(B\) is a subgraph of \(C\), there are a subset
+\(U_C\subseteq V_C\) and a bijection
+\[
+  g:V_B\longrightarrow U_C
+\]
+such that \(g\) is a graph isomorphism from \(B\) to the induced subgraph
+\(C[U_C]\).  Thus, for every \(x,y\in V_B\),
+\[
+  \{x,y\}\in E_B
+  \quad\Longleftrightarrow\quad
+  \{g(x),g(y)\}\in E_C.
+  \tag{2}
+\]
+The right-hand side of (2) is exactly the edge relation in \(C[U_C]\),
+because that subgraph is induced.
+Now define
+\[
+  U_C'=g(U_B)\subseteq U_C
+  \qquad\text{and}\qquad
+  h=g\circ f:V_A\longrightarrow U_C'.
+\]
+Both \(f\) and \(g\) are bijections on their stated domains, so \(h\) is a
+bijection from \(V_A\) onto \(U_C'\).  For any \(u,v\in V_A\), combining
+(1) and (2) gives
+\[
+\begin{aligned}
+  \{u,v\}\in E_A
+  &\Longleftrightarrow \{f(u),f(v)\}\in E_B\\
+  &\Longleftrightarrow \{g(f(u)),g(f(v))\}\in E_C\\
+  &\Longleftrightarrow \{h(u),h(v)\}\in E\bigl(C[U_C']\bigr).
+\end{aligned}
+\]
+The last equivalence holds because \(C[U_C']\) is the induced subgraph on
+\(U_C'\): it contains precisely the edges of \(C\) whose two endpoints lie
+in \(U_C'\).  Therefore \(h\) preserves both edges and non-edges and is a
+graph isomorphism from \(A\) to \(C[U_C']\).
+Since \(C[U_C']\) is an induced subgraph of \(C\), the definition of the
+subgraph relation implies that \(A\) is a subgraph of \(C\).  Hence the
+subgraph relation is transitive.
+\end{solution}
+
+\subsection{Anti-symmetry (8 points)}
+
+Using the same subgraph-isomorphism definition, show that if graph \(A\) is a
+subgraph of graph \(B\), and graph \(B\) is a subgraph of graph \(A\), then
+\(A\) and \(B\) are graph-isomorphic.
+
+\textbf{Hint.} What does the condition imply about the numbers of nodes in
+\(A\) and \(B\), and why does that implication result in graph isomorphism?
+
+\begin{solution}
+Write
+\[
+  A=(V_A,E_A),\qquad B=(V_B,E_B),
+\]
+and assume, as in the homework setting, that the graphs are finite.  Since
+\(A\) is a subgraph of \(B\), there are a subset
+\(U_B\subseteq V_B\) and a bijection
+\[
+  f:V_A\longrightarrow U_B
+\]
+such that \(A\) is graph-isomorphic to the induced subgraph \(B[U_B]\).
+Consequently,
+\[
+  |V_A|=|U_B|\leq |V_B|.
+  \tag{1}
+\]
+
+Conversely, since \(B\) is a subgraph of \(A\), there are a subset
+\(U_A\subseteq V_A\) and a bijection from \(V_B\) onto \(U_A\).  Hence
+\[
+  |V_B|=|U_A|\leq |V_A|.
+  \tag{2}
+\]
+Combining (1) and (2) gives
+\[
+  |V_A|=|V_B|.
+\]
+It follows from \(U_B\subseteq V_B\) and
+\(|U_B|=|V_A|=|V_B|\) that
+\[
+  U_B=V_B.
+\]
+Therefore the induced subgraph \(B[U_B]\) is the whole graph \(B\), not a
+proper subgraph.
+
+The original bijection \(f:V_A\to U_B\) is consequently a bijection
+\(f:V_A\to V_B\).  Since it is an isomorphism from \(A\) to \(B[U_B]=B\),
+for every \(u,v\in V_A\) it satisfies
+\[
+  \{u,v\}\in E_A
+  \quad\Longleftrightarrow\quad
+  \{f(u),f(v)\}\in E_B.
+\]
+Thus \(f\) preserves both edges and non-edges and is a graph isomorphism
+between \(A\) and \(B\).  Hence the subgraph relation is anti-symmetric up to
+graph isomorphism.
+\end{solution}
+
+\subsection{Common Subgraph (4 points)}
+
+Consider a two-dimensional order-embedding space. Graphs \(A\) and \(B\) have
+embeddings \(\vect{z}_A\) and \(\vect{z}_B\), and suppose the order-embedding
+constraint is preserved perfectly. Prove that graph \(X\) is a common subgraph
+of \(A\) and \(B\) if and only if
+\[
+  \vect{z}_X\preceq
+  \min\{\vect{z}_A,\vect{z}_B\},
+\]
+where the minimum is taken coordinate-wise.
+
+\begin{solution}
+Let
+\[
+  \min\{\vect{z}_A,\vect{z}_B\}
+  =
+  \left(
+    \min\{\vect{z}_A[0],\vect{z}_B[0]\},
+    \min\{\vect{z}_A[1],\vect{z}_B[1]\}
+  \right).
+\]
+By definition, \(X\) is a common subgraph of \(A\) and \(B\) exactly when
+\(X\) is a subgraph of \(A\) and \(X\) is a subgraph of \(B\).
+
+\textbf{(\(\Longrightarrow\))} Assume that \(X\) is a common subgraph of
+\(A\) and \(B\).  Perfect preservation of the order-embedding constraint gives
+\[
+  \vect{z}_X\preceq\vect{z}_A
+  \qquad\text{and}\qquad
+  \vect{z}_X\preceq\vect{z}_B.
+\]
+Therefore, for each coordinate \(i\in\{0,1\}\),
+\[
+  \vect{z}_X[i]\leq \vect{z}_A[i]
+  \quad\text{and}\quad
+  \vect{z}_X[i]\leq \vect{z}_B[i].
+\]
+The number \(\vect{z}_X[i]\) is consequently no larger than the smaller of
+\(\vect{z}_A[i]\) and \(\vect{z}_B[i]\):
+\[
+  \vect{z}_X[i]
+  \leq
+  \min\{\vect{z}_A[i],\vect{z}_B[i]\},
+  \qquad i=0,1.
+\]
+These two coordinate inequalities are precisely
+\[
+  \vect{z}_X\preceq
+  \min\{\vect{z}_A,\vect{z}_B\}.
+\]
+
+\textbf{(\(\Longleftarrow\))} Conversely, assume that
+\[
+  \vect{z}_X\preceq
+  \min\{\vect{z}_A,\vect{z}_B\}.
+\]
+For each \(i\in\{0,1\}\), the definition of the minimum gives
+\[
+  \min\{\vect{z}_A[i],\vect{z}_B[i]\}
+  \leq \vect{z}_A[i]
+  \qquad\text{and}\qquad
+  \min\{\vect{z}_A[i],\vect{z}_B[i]\}
+  \leq \vect{z}_B[i].
+\]
+Combining these inequalities with the assumption yields
+\[
+  \vect{z}_X[i]\leq\vect{z}_A[i]
+  \qquad\text{and}\qquad
+  \vect{z}_X[i]\leq\vect{z}_B[i]
+  \quad\text{for }i=0,1.
+\]
+Hence
+\[
+  \vect{z}_X\preceq\vect{z}_A
+  \qquad\text{and}\qquad
+  \vect{z}_X\preceq\vect{z}_B.
+\]
+Applying the reverse direction of the perfect order-embedding constraint,
+\(X\) is a subgraph of both \(A\) and \(B\).  Thus \(X\) is a common
+subgraph of \(A\) and \(B\).
+
+Both implications hold, so
+\[
+  X\text{ is a common subgraph of }A\text{ and }B
+  \quad\Longleftrightarrow\quad
+  \vect{z}_X\preceq\min\{\vect{z}_A,\vect{z}_B\}.
+\]
+\end{solution}
+
+\subsection{Incomparable Graphs (5 points)}
+
+Suppose \(A\), \(B\), and \(C\) are pairwise non-isomorphic graphs, and none is
+a subgraph of another. They are embedded into a two-dimensional order-embedding
+space. Without loss of generality, assume
+\[
+  \vect{z}_A[0]>\vect{z}_B[0]>\vect{z}_C[0].
+\]
+What must this imply about the relationship among
+\(\vect{z}_A[1]\), \(\vect{z}_B[1]\), and \(\vect{z}_C[1]\) if the
+order-embedding constraint is satisfied perfectly?
+
+\begin{solution}
+The second coordinate must be ordered in the opposite direction:
+\[
+  \vect{z}_A[1]<\vect{z}_B[1]<\vect{z}_C[1].
+\]
+To see this, first compare \(A\) and \(B\).  We are given
+\[
+  \vect{z}_B[0]<\vect{z}_A[0],
+\]
+so the first coordinate already satisfies the inequality needed for
+\(\vect{z}_B\preceq\vect{z}_A\).  If we also had
+\(\vect{z}_B[1]\leq\vect{z}_A[1]\), then both coordinates would satisfy
+\[
+  \vect{z}_B[0]\leq\vect{z}_A[0]
+  \qquad\text{and}\qquad
+  \vect{z}_B[1]\leq\vect{z}_A[1].
+\]
+This would give \(\vect{z}_B\preceq\vect{z}_A\).  By the perfectly preserved
+order-embedding constraint, \(B\) would then be a subgraph of \(A\), contrary
+to the hypothesis.  Therefore
+\[
+  \vect{z}_B[1]>\vect{z}_A[1].
+  \tag{1}
+\]
+
+Apply the same argument to \(B\) and \(C\).  Since
+\(\vect{z}_C[0]<\vect{z}_B[0]\), the assumption
+\(\vect{z}_C[1]\leq\vect{z}_B[1]\) would imply
+\(\vect{z}_C\preceq\vect{z}_B\), and hence that \(C\) is a subgraph of \(B\).
+This is also forbidden, so
+\[
+  \vect{z}_C[1]>\vect{z}_B[1].
+  \tag{2}
+\]
+Combining (1) and (2) yields
+\[
+  \boxed{\vect{z}_A[1]<\vect{z}_B[1]<\vect{z}_C[1]}.
+\]
+The inequalities must be strict: equality in either comparison would still
+make the vector with the smaller first coordinate coordinate-wise no larger
+than the other vector, which would incorrectly assert a subgraph relation.
+With this reverse ordering, every pair remains incomparable: the graph with
+the larger first coordinate cannot be below the other one in dimension \(0\),
+and the graph with the smaller first coordinate is above it in dimension
+\(1\).
+\end{solution}
+
+\subsection{Limitation of a Two-Dimensional Order-Embedding Space (10 points)}
+
+Suppose again that \(A\), \(B\), and \(C\) are pairwise non-isomorphic graphs,
+and none is a subgraph of another. Construct graphs \(X\), \(Y\), and \(Z\),
+each of which is a subgraph of one or more graphs in \(\{A,B,C\}\), so that
+their embeddings must satisfy
+\[
+  \vect{z}_X\preceq\vect{z}_Y
+  \qquad\text{and}\qquad
+  \vect{z}_X\preceq\vect{z}_Z.
+\]
+You do not need to give embedding coordinates or draw the graphs. Specify only
+which of \(A\), \(B\), and \(C\) contain \(X\), \(Y\), and \(Z\) as subgraphs,
+and explain why the inequalities are guaranteed.
+
+Use the following clarifications:
+\begin{enumerate}
+  \item Without loss of generality,
+    \(\vect{z}_A[0]>\vect{z}_B[0]>\vect{z}_C[0]\).
+  \item Each of \(X\), \(Y\), and \(Z\) may be a common subgraph of exactly one,
+    two, or three graphs in \(\{A,B,C\}\).
+  \item The construction must guarantee both inequalities whenever the
+    order-embedding constraint is satisfied in two dimensions.
+  \item It is not necessary to exhibit concrete graph drawings. The requested
+    subgraph relationships and their justification are sufficient.
+\end{enumerate}
+
+\begin{solution}
+We use the following containment pattern:
+\begin{itemize}
+  \item \(X\) is a common subgraph of all three graphs \(A,B,C\);
+  \item \(Y\) is a subgraph of exactly \(B\), so \(Y\) is not a subgraph of
+    \(A\) or \(C\);
+  \item \(Z\) is also a subgraph of exactly \(B\), so \(Z\) is not a
+    subgraph of \(A\) or \(C\).
+\end{itemize}
+The graphs \(Y\) and \(Z\) can be chosen to be different subgraphs of \(B\).
+The important point is that their listed memberships are exact.
+
+From the assumption in the question and the result of the preceding part,
+the three parent embeddings have the strict ordering
+\[
+  \vect{z}_A[0]>\vect{z}_B[0]>\vect{z}_C[0]
+  \qquad\text{and}\qquad
+  \vect{z}_A[1]<\vect{z}_B[1]<\vect{z}_C[1].
+  \tag{1}
+\]
+
+Because \(X\) is a subgraph of every parent, the order-embedding constraint
+gives
+\[
+  \vect{z}_X\preceq\vect{z}_A,\qquad
+  \vect{z}_X\preceq\vect{z}_B,\qquad
+  \vect{z}_X\preceq\vect{z}_C.
+\]
+Taking the strongest bound in each coordinate and using (1),
+\[
+  \vect{z}_X[0]\leq\vect{z}_C[0]
+  \qquad\text{and}\qquad
+  \vect{z}_X[1]\leq\vect{z}_A[1].
+  \tag{2}
+\]
+
+Consider \(Y\). Since \(Y\) is a subgraph of \(B\),
+\[
+  \vect{z}_Y[0]\leq\vect{z}_B[0],
+  \qquad
+  \vect{z}_Y[1]\leq\vect{z}_B[1].
+  \tag{3}
+\]
+Moreover, \(Y\) is not a subgraph of \(A\). If
+\(\vect{z}_Y[1]\leq\vect{z}_A[1]\), then (3) and (1) would also give
+\(\vect{z}_Y[0]\leq\vect{z}_A[0]\), and hence
+\(\vect{z}_Y\preceq\vect{z}_A\). Perfect preservation would then imply that
+\(Y\) is a subgraph of \(A\), a contradiction. Therefore
+\[
+  \vect{z}_Y[1]>\vect{z}_A[1].
+  \tag{4}
+\]
+Similarly, \(Y\) is not a subgraph of \(C\). The second inequality in (3)
+and (1) already imply
+\(\vect{z}_Y[1]\leq\vect{z}_B[1]<\vect{z}_C[1]\). Thus the only way that
+\(\vect{z}_Y\not\preceq\vect{z}_C\) can hold is
+\[
+  \vect{z}_Y[0]>\vect{z}_C[0].
+  \tag{5}
+\]
+Combining (2), (4), and (5) gives
+\[
+  \vect{z}_X[0]\leq\vect{z}_C[0]<\vect{z}_Y[0],
+  \qquad
+  \vect{z}_X[1]\leq\vect{z}_A[1]<\vect{z}_Y[1],
+\]
+so
+\[
+  \vect{z}_X\preceq\vect{z}_Y.
+  \tag{6}
+\]
+
+Exactly the same argument applies to \(Z\): from
+\(\vect{z}_Z\preceq\vect{z}_B\), together with
+\(\vect{z}_Z\not\preceq\vect{z}_A\) and
+\(\vect{z}_Z\not\preceq\vect{z}_C\), we
+obtain
+\[
+  \vect{z}_Z[1]>\vect{z}_A[1]
+  \qquad\text{and}\qquad
+  \vect{z}_Z[0]>\vect{z}_C[0].
+\]
+Together with (2), this yields
+\[
+  \vect{z}_X[0]\leq\vect{z}_C[0]<\vect{z}_Z[0],
+  \qquad
+  \vect{z}_X[1]\leq\vect{z}_A[1]<\vect{z}_Z[1],
+\]
+and hence
+\[
+  \vect{z}_X\preceq\vect{z}_Z.
+  \tag{7}
+\]
+
+Thus this containment pattern guarantees both required inequalities in every
+perfect two-dimensional order embedding. The coordinate argument forces the
+embedding to place \(X\) below both \(Y\) and \(Z\), even though the
+construction only specifies their relationships with \(A,B,C\). We can
+choose \(B\) to contain \(X,Y,Z\) as suitable induced subgraphs, while \(A\)
+and \(C\) omit \(Y\) and \(Z\). We may additionally choose \(X\) not to be a
+subgraph of either \(Y\) or \(Z\), illustrating the two-dimensional
+representation limitation.
+\end{solution}
